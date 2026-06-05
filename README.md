@@ -56,7 +56,7 @@ export DOORAY_PROJECT_CACHE_TTL_MINUTES=5
 ./gradlew runLocal
 
 # 또는 직접 실행
-java -jar build/libs/dooray-mcp-server-0.4.1-all.jar
+java -jar build/libs/dooray-mcp-server-0.4.2-all.jar
 ```
 
 ### Docker 실행
@@ -225,7 +225,7 @@ CI=true ./gradlew test
 ./gradlew clean shadowJar
 
 # Docker 이미지 빌드
-docker build -t dooray-mcp:local --build-arg VERSION=0.4.1 .
+docker build -t dooray-mcp:local --build-arg VERSION=0.4.2 .
 ```
 
 ## 환경변수
