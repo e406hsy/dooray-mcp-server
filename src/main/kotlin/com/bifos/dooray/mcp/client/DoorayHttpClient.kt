@@ -6,6 +6,7 @@ import com.bifos.dooray.mcp.types.*
 import com.bifos.dooray.mcp.utils.Env
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
@@ -16,18 +17,25 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 
-class DoorayHttpClient(private val baseUrl: String, private val doorayApiKey: String) :
-        DoorayClient {
+class DoorayHttpClient(
+        private val baseUrl: String,
+        private val doorayApiKey: String,
+        private val engine: HttpClientEngine? = null
+) : DoorayClient {
 
     private val log = LoggerFactory.getLogger(DoorayHttpClient::class.java)
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient = initHttpClient(followRedirects = true)
 
-    init {
-        httpClient = initHttpClient()
-    }
+    /**
+     * 파일 다운로드 전용 클라이언트. Dooray 파일 API는 file-api 호스트로 307 리다이렉트하는데, Ktor는 호스트가
+     * 바뀌면 Authorization 헤더를 제거하므로 자동 리다이렉트를 끄고 [downloadPostFile]에서 직접 따라간다.
+     */
+    private val fileHttpClient: HttpClient = initHttpClient(followRedirects = false)
 
-    private fun initHttpClient(): HttpClient {
-        return HttpClient {
+    private fun initHttpClient(followRedirects: Boolean): HttpClient {
+        val config: HttpClientConfig<*>.() -> Unit = {
+            this.followRedirects = followRedirects
+
             defaultRequest {
                 url(baseUrl)
                 header("Authorization", "dooray-api $doorayApiKey")
@@ -63,6 +71,7 @@ class DoorayHttpClient(private val baseUrl: String, private val doorayApiKey: St
                         }
             }
         }
+        return if (engine != null) HttpClient(engine, config) else HttpClient(config)
     }
 
     /**
@@ -469,6 +478,59 @@ class DoorayHttpClient(private val baseUrl: String, private val doorayApiKey: St
                 successMessage = "✅ 프로젝트 워크플로우 목록 조회 성공"
         ) {
             httpClient.get("/project/v1/projects/$projectId/workflows")
+        }
+    }
+
+    override suspend fun getPostFileMeta(
+            projectId: String,
+            postId: String,
+            fileId: String
+    ): PostFileMetaResponse {
+        return executeApiCall(
+                operation = "GET /project/v1/projects/$projectId/posts/$postId/files/$fileId?media=meta",
+                successMessage = "✅ 업무 첨부파일 메타 조회 성공"
+        ) {
+            httpClient.get("/project/v1/projects/$projectId/posts/$postId/files/$fileId") {
+                parameter("media", "meta")
+            }
+        }
+    }
+
+    override suspend fun downloadPostFile(
+            projectId: String,
+            postId: String,
+            fileId: String
+    ): ByteArray {
+        val path = "/project/v1/projects/$projectId/posts/$postId/files/$fileId"
+        try {
+            log.info("🔗 API 요청: GET $path?media=raw")
+            var response = fileHttpClient.get(path) { parameter("media", "raw") }
+            log.info("📡 응답 수신: ${response.status} ${response.status.description}")
+
+            if (response.status.value in 300..399) {
+                val location =
+                        response.headers[HttpHeaders.Location]
+                                ?: throw CustomException(
+                                        "리다이렉트 응답에 Location 헤더가 없습니다",
+                                        response.status.value
+                                )
+                log.info("↪️ 파일 서버로 리다이렉트: $location")
+                response = fileHttpClient.get(location)
+                log.info("📡 응답 수신: ${response.status} ${response.status.description}")
+            }
+
+            return when (response.status) {
+                HttpStatusCode.OK -> {
+                    val bytes = response.readRawBytes()
+                    log.info("✅ 업무 첨부파일 다운로드 성공 (${bytes.size} bytes)")
+                    bytes
+                }
+                else -> handleErrorResponse(response)
+            }
+        } catch (e: CustomException) {
+            throw e
+        } catch (e: Exception) {
+            handleGenericException(e)
         }
     }
 

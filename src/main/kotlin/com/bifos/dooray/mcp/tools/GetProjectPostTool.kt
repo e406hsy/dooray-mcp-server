@@ -49,7 +49,8 @@ fun getProjectPostHandler(
                     "\n\n💡 다음 가능한 작업:\n" +
                             "- dooray_project_update_post: 업무 수정\n" +
                             "- dooray_project_set_post_workflow: 업무 상태 변경\n" +
-                            "- dooray_project_set_post_done: 업무 완료 처리"
+                            "- dooray_project_set_post_done: 업무 완료 처리\n" +
+                            "- dooray_project_download_post_file: 첨부파일 다운로드 (files[].id 사용)"
                 successResult(
                     data = post,
                     message = "📋 업무 상세 정보를 성공적으로 조회했습니다 (업무번호: ${post.taskNumber})$nextStepHint"

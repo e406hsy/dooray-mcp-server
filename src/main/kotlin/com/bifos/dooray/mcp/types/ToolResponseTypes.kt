@@ -29,6 +29,16 @@ data class WikiCommentsResponseData(
         val pageSize: Int
 )
 
+/** 업무 첨부파일 다운로드 응답 데이터 */
+@Serializable
+data class PostFileDownloadResponseData(
+        val fileId: String,
+        val name: String,
+        val mimeType: String?,
+        val size: Long,
+        val savedPath: String
+)
+
 /** MCP Tool 에러 응답 */
 @Serializable
 data class ToolErrorResponse(

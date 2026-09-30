@@ -102,6 +102,7 @@ class DoorayMcpServer {
         addTool(getProjectMembersTool(), getProjectMembersHandler(doorayHttpClient, projectResolver))
         addTool(getProjectWorkflowsTool(), getProjectWorkflowsHandler(doorayHttpClient, projectResolver))
         addTool(setProjectPostParentTool(), setProjectPostParentHandler(doorayHttpClient, projectResolver))
+        addTool(downloadPostFileTool(), downloadPostFileHandler(doorayHttpClient, projectResolver))
 
         log.info("Successfully added $toolCount tools to MCP server")
     }

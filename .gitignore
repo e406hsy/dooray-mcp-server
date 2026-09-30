@@ -48,3 +48,5 @@ bin/
 ### claude code, oh-my-claude-code ###
 .claude/settings.local.json
 .omc
+
+tmp/

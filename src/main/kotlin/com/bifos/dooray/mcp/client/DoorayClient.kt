@@ -134,6 +134,20 @@ interface DoorayClient {
         logId: String
     ): DeleteCommentResponse
 
+    /** 업무 첨부파일의 메타 정보(이름, 크기, MIME 타입 등)를 조회합니다. */
+    suspend fun getPostFileMeta(
+        projectId: String,
+        postId: String,
+        fileId: String
+    ): PostFileMetaResponse
+
+    /** 업무 첨부파일 원본(raw)을 다운로드합니다. 307 리다이렉트를 Authorization 헤더 유지한 채 따라갑니다. */
+    suspend fun downloadPostFile(
+        projectId: String,
+        postId: String,
+        fileId: String
+    ): ByteArray
+
     suspend fun getProjects(
         page: Int? = null,
         size: Int? = null,

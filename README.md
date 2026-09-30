@@ -71,7 +71,7 @@ docker run -e DOORAY_API_KEY="your_api_key" \
            bifos/dooray-mcp:latest
 ```
 
-## 사용 가능한 도구 (총 20개)
+## 사용 가능한 도구 (총 21개)
 
 ### 위키 관련 도구 (6개)
 
@@ -109,7 +109,7 @@ docker run -e DOORAY_API_KEY="your_api_key" \
 
 프로젝트 멤버 목록을 조회합니다. 업무 담당자/참조자 지정 시 사용합니다.
 
-### 업무 관련 도구 (8개)
+### 업무 관련 도구 (9개)
 
 > 💡 `project_id` 파라미터에 프로젝트 ID 또는 **프로젝트 코드(이름)**를 입력할 수 있습니다. 서버가 내부적으로 자동으로 ID를 resolve합니다.
 
@@ -145,21 +145,25 @@ docker run -e DOORAY_API_KEY="your_api_key" \
 
 프로젝트의 워크플로우(업무 상태) 목록을 조회합니다.
 
+#### 17. dooray_project_download_post_file
+
+업무의 첨부파일을 로컬 디스크에 다운로드하고 저장 경로를 반환합니다. `file_id`는 `dooray_project_get_post` 응답의 `files[].id`이며, `output_dir`를 생략하면 시스템 임시 디렉터리 아래 `dooray-mcp-downloads`에 저장됩니다. (Dooray 파일 API의 307 리다이렉트를 Authorization 헤더를 유지한 채 따라갑니다.)
+
 ### 업무 댓글 관련 도구 (4개)
 
-#### 17. dooray_project_create_post_comment
+#### 18. dooray_project_create_post_comment
 
 업무에 댓글을 생성합니다.
 
-#### 18. dooray_project_get_post_comments
+#### 19. dooray_project_get_post_comments
 
 업무의 댓글 목록을 조회합니다.
 
-#### 19. dooray_project_update_post_comment
+#### 20. dooray_project_update_post_comment
 
 업무 댓글을 수정합니다.
 
-#### 20. dooray_project_delete_post_comment
+#### 21. dooray_project_delete_post_comment
 
 업무 댓글을 삭제합니다.
 

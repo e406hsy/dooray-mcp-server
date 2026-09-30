@@ -57,6 +57,7 @@ class McpServerIntegrationTest {
             "dooray_project_get_post_comments",
             "dooray_project_update_post_comment",
             "dooray_project_delete_post_comment",
+            "dooray_project_download_post_file",
         )
 
         /** project_id를 required로 가져야 하는 도구 목록 */
@@ -82,6 +83,7 @@ class McpServerIntegrationTest {
             "dooray_project_get_post_comments",
             "dooray_project_update_post_comment",
             "dooray_project_delete_post_comment",
+            "dooray_project_download_post_file",
         )
     }
 
@@ -93,11 +95,17 @@ class McpServerIntegrationTest {
             "shadowJar not found at $jarPath — run ./gradlew shadowJar first"
         )
 
-        val pb = ProcessBuilder("java", "-jar", jarPath)
+        // PATH의 java가 아닌, 테스트를 실행 중인 JVM(툴체인 JDK 21)으로 서버를 띄운다.
+        // PATH의 java가 구버전이면 서버가 즉시 죽고 클라이언트가 무한 대기하기 때문.
+        val javaExecutable = java.io.File(System.getProperty("java.home"), "bin/java").absolutePath
+        val pb = ProcessBuilder(javaExecutable, "-jar", jarPath)
         pb.environment()["DOORAY_BASE_URL"] = "https://fake.dooray.test"
         pb.environment()["DOORAY_API_KEY"] = "fake-api-key-for-testing"
         pb.redirectError(ProcessBuilder.Redirect.DISCARD)
         process = pb.start()
+        check(!process.waitFor(500, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+            "MCP 서버 프로세스가 시작 직후 종료되었습니다 (exit=${process.exitValue()}, java=$javaExecutable)"
+        }
 
         val transport = StdioClientTransport(
             input = process.inputStream.asSource().buffered(),

@@ -47,6 +47,19 @@ data class PostBody(
 /** 첨부 파일 정보 */
 @Serializable data class PostFile(val id: String, val name: String, val size: Long)
 
+/** 첨부 파일 상세(메타) 정보 - GET .../files/{file-id}?media=meta */
+@Serializable
+data class PostFileMeta(
+        val id: String,
+        val name: String,
+        val size: Long,
+        val mimeType: String? = null,
+        val createdAt: String? = null,
+        val creator: PostUser? = null
+)
+
+typealias PostFileMetaResponse = DoorayApiResponse<PostFileMeta>
+
 /** 업무 기본 정보 (목록용) */
 @Serializable
 data class Post(
